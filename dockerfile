@@ -1,4 +1,4 @@
-FROM python:3.8 
+FROM python:3.11
 
 # Set the home directory to /root
 ENV HOME /root
@@ -9,10 +9,10 @@ WORKDIR /root
 COPY . .
 
 # Installing Dependecies 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Exposing port 8080
 EXPOSE 8080
 
 # Run the app
-CMD python3 -u server.py
+CMD python -u server.py

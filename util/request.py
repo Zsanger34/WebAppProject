@@ -73,29 +73,6 @@ def test_headers_with_spaces():
     assert request.headers["Host"] == "localhost:8080"  # note: The leading space in the header value must be removed
     assert request.body == b"" 
 
-# def test_empty_request():
-#     request = Request(b'')
-#     assert request.method == ""
-#     assert request.path == ""
-#     assert request.http_version == ""
-#     assert request.headers == {}
-#     assert request.body == b""
-
-# def test_empty_reqline_GET():
-#     request = Request(b' \r\nHost: localhost:8080\r\nConnection: keep-alive\r\n\r\n')
-#     assert request.method == ""
-#     assert request.path == ""
-#     assert request.http_version == ""
-#     assert "Host" in request.headers
-#     assert request.headers["Host"] == "localhost:8080" 
-#     assert request.body == b""
-# def test_empty_header_GET():
-#     request = Request(b'POST /path HTTP/1.1\r\n \r\n\r\n')
-#     assert request.method == "GET"
-#     assert request.path == ""
-#     assert request.http_version == ""
-#     assert request.headers == {}
-#     assert request.body == b""
 def test_empty_body_POST():
     request = Request(b'POST /path HTTP/1.1\r\nContent-Type: text/plain\r\nContent-Length: 5\r\n\r\n')
     assert request.body == b""
