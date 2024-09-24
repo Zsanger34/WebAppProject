@@ -1,9 +1,31 @@
 import public
 # This path is provided as an example of how to use the router
 def root_path(request, handler):
-    html = open("public/index.html", "r")
-    for line in html:
-        line.encode()
-        line_len = len(line)
-        response = f"HTTP/1.1 200 OK\r\nContent-Length: {line_len}\r\nContent-Type: text/html; charset=utf-8\r\n\r\n{line}"
-        handler.request.sendall(response.encode())
+    with open(f"public/index.html", "r") as file:
+        html = file.read()
+    visit = 0
+    addcookie = ""
+
+    print(f'This is the headers {request.headers}')
+    if "Cookie" in request.headers:
+        if "visits" in request.cookie:
+            visit = int(request.cookies["visits"])+1
+            addcookie =f"Set-Cookie: visits={visit};"
+    else:
+        visit = 1
+        addcookie = f" Set-Cookie: visits={visit}; Max-Age = 3600"
+
+    html = html.replace("{{visits}}", str(visit))
+
+    line_len = len(html)
+    #print(f"This is the Length {line_len} and this is the encoded {html_response}")
+    response = "HTTP/1.1 200 OK\r\n" \
+               f"Content-Length: {line_len}\r\n" \
+               f"{addcookie}\r\n" \
+               "X-Content-Type-Options: nosniff; \r\n" \
+               "Content-Type: text/html; charset=utf-8\r\n" \
+               f"\r\n"
+    print(f"This is the response {response}")
+    response = response + html
+
+    handler.request.sendall(response.encode())

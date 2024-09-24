@@ -12,7 +12,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         self.router.add_route("GET", "/hello", hello_path, True)
         # TODO: Add your routes here
         self.router.add_route("GET", '/', root_path, True)
-        #self.router.add_route("GET", '/public/', public, False)
+        self.router.add_route("GET", '/public/', public, False)
         super().__init__(request, client_address, server)
 
     def handle(self):

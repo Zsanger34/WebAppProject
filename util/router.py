@@ -1,3 +1,6 @@
+import util.request
+
+
 class Router:
 
     def __init__(self):
@@ -23,19 +26,17 @@ class Router:
                         route['action'](request, handler)
                         return
                 else:
-                    routeLen = len(route["path"])
-                    if request.path[:routeLen] == request.path:
+                    if request.path.startswith(route["path"]):
                         route['action'](request, handler)
                         return
         response_404(request, handler)
 
-
 def response_404(request, handler):
-    response = "HTTP/1.1 404 Not Found\r\nContent-Length: 36\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nThe requested content does not exist"
+    response = "HTTP/1.1 404 Not Found\r\nContent-Length: 36\r\nContent-Type: text/plain; charset=utf-8; X-Content-Type-Options: nosniff\r\n\r\nThe requested content does not exist"
     handler.request.sendall(response.encode())
 
 
-def basic_router_False():
+def basic_add_route_False():
     router = Router()
     router.add_route("Get", "/", router.route_request, False)
     assert router.routes[0]["method"] == "Get"
@@ -43,15 +44,14 @@ def basic_router_False():
     assert router.routes[0]["exact_path"] == False
 
 
-def basic_router_True():
+def basic_add_route_True():
     router = Router()
     router.add_route("Get", "/test", router.route_request, True)
     assert router.routes[0]["method"] == "Get"
     assert router.routes[0]["path"] == "/test"
     assert router.routes[0]["exact_path"] == True
 
-#Test that calling add route correctly adds to the route
 
 if __name__ == '__main__':
-    basic_router_False()
-    basic_router_True()
+    basic_add_route_False()
+    basic_add_route_True()

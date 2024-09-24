@@ -15,11 +15,18 @@ class Request:
         request = request.decode('utf-8')
                                                                         #print(f"Start\nThis is my request: {request}")
         #Seperating the Request by the /r/n/r/n will give me the Headers and Request Line and the Body
-        parsed_header, parsed_body = request.split("\r\n\r\n")
+        if "\r\n\r\n" in request:
+            parsed_header, parsed_body = request.split("\r\n\r\n")
+            #print(f"This is the request {request}")
+        else:
+            parsed_header, parsed_body = request, ""
                                                                         #print(f" This is my parsed_header {parsed_header}")
                                                                         #print(f" This is my parsed_body\n {parsed_body} \nEnd\n")
         #Seperating Headers and Request Line by seperating at the first  carriage return
-        parsed_reqline, parsed_headers = parsed_header.split("\r\n", 1) 
+        if "\r\n" in parsed_header:
+            parsed_reqline, parsed_headers = parsed_header.split("\r\n", 1)
+        else:
+            parsed_reqline, parsed_headers = parsed_header, ""
                                                                         #print(f"This is my parsed_reqlin {parsed_reqline}")
                                                                         #print(f"This is my parsed_headers {parsed_headers}\n")
         #Parse the Request Line by splitting the whitespace
@@ -64,7 +71,7 @@ def test1():
     assert "Host" in request.headers
     assert request.headers["Host"] == "localhost:8080" # note: The leading space in the header value must be removed
     assert request.headers["Connection"] == "keep-alive"
-    print(request.headers)
+    #print(request.headers)
     assert len(request.headers)==2
     assert request.body == b""  # There is no body for this request.
     # When parsing POST requests, the body must be in bytes, not str
