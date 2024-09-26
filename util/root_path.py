@@ -6,14 +6,13 @@ def root_path(request, handler):
     visit = 0
     addcookie = ""
 
-    print(f'This is the headers {request.headers}')
-    if "Cookie" in request.headers:
-        if "visits" in request.cookie:
-            visit = int(request.cookies["visits"])+1
-            addcookie =f"Set-Cookie: visits={visit};"
+    if 'visits' in request.cookies:
+        visit = int(request.cookies["visits"])+1
+        addcookie = f"Set-Cookie: visits={visit}; Max-Age=3600"
     else:
         visit = 1
-        addcookie = f" Set-Cookie: visits={visit}; Max-Age = 3600"
+        addcookie = f"Set-Cookie: visits={visit}; Max-Age=3600"
+
 
     html = html.replace("{{visits}}", str(visit))
 
@@ -22,7 +21,7 @@ def root_path(request, handler):
     response = "HTTP/1.1 200 OK\r\n" \
                f"Content-Length: {line_len}\r\n" \
                f"{addcookie}\r\n" \
-               "X-Content-Type-Options: nosniff; \r\n" \
+               "X-Content-Type-Options: nosniff;\r\n" \
                "Content-Type: text/html; charset=utf-8\r\n" \
                f"\r\n"
     print(f"This is the response {response}")
