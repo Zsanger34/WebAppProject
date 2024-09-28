@@ -1,0 +1,12 @@
+# A path "/chat-messages/{id}" that accepts DELETE requests
+# The {id} in the path is the id of the record to delete
+# Eg. DELETE /chat-messages/1 to delete the message with id 1
+# Eg. DELETE /chat-messages/2 to delete the message with id 2
+# Respond with a 204 No Content response code
+# There is no body to your response (We don’t want to leak information about deleted records)
+# You will give the same response even if there is no message with that id or the message has already been deleted
+# After this request is sent for a message, that message should never be served again (It's deleted)
+# Note that the "X" next to each chat message will send a DELETE request for that message
+
+def delete_chat(request, handler):
+    pass
