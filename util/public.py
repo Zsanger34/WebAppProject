@@ -33,18 +33,20 @@ def public(request, handler):
 
             filep, ext = pfile.split('.') #This will split at . with the following filep = "favicon" ext ="ico"
             #print(f'filep: {filep}, ext: {ext}')
-            if ext == "ico":
-                with open(f"./public/{pfile}", "rb") as file:
-                    html = file.read()
-                response = f"HTTP/1.1 200 OK\r\nContent-Length: {len(html)}\r\nX-Content-Type-Options: nosniff; Content-Type: {mime[ext]}; charset=utf-8\r\n\r\n"
-                response = response.encode() +html
-                handler.request.sendall(response)
-            else:
-                with open(f"./public/{pfile}", "r") as file:
-                    html = file.read()
-                #print(f"Hopeflly we are still grabbing the css ./public/{pfile}")
-                response = f"HTTP/1.1 200 OK\r\nContent-Length: {len(html)}\r\nX-Content-Type-Options: nosniff; Content-Type: {mime[ext]}; charset=utf-8\r\n\r\n{html}"
-                handler.request.sendall(response.encode())
+            # if ext == "ico":
+            #     with open(f"./public/{pfile}", "rb") as file:
+            #         html = file.read()
+            #     response = f"HTTP/1.1 200 OK\r\nContent-Length: {len(html)}\r\nX-Content-Type-Options: nosniff; Content-Type: {mime[ext]}; charset=utf-8\r\n\r\n"
+            #     response = response.encode() +html
+            #     handler.request.sendall(response)
+            # else:
+            with open(f"./public/{pfile}", "rb") as file:
+                html = file.read()
+
+            # print(f"Hopeflly we are still grabbing the css ./public/{pfile}")
+            response = f"HTTP/1.1 200 OK\r\nContent-Length: {len(html)}\r\nX-Content-Type-Options: nosniff; Content-Type: {mime[ext]}; charset=utf-8\r\n\r\n"
+            response = response.encode() + html
+            handler.request.sendall(response)
     else:
         response = "HTTP/1.1 404 Not Found\r\nContent-Length: 36\r\nContent-Type: text/plain; charset=utf-8; X-Content-Type-Options: nosniff\r\n\r\nThe requested content does not exist"
         handler.request.sendall(response.encode())
