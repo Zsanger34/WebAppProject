@@ -7,6 +7,18 @@
 # You will give the same response even if there is no message with that id or the message has already been deleted
 # After this request is sent for a message, that message should never be served again (It's deleted)
 # Note that the "X" next to each chat message will send a DELETE request for that message
-
+from pymongo import MongoClient
 def delete_chat(request, handler):
-    pass
+    mongo_client = MongoClient("localhost")
+    db = mongo_client["cse312"]
+    chat_collection = db["chat"]
+    path = request.path
+    #Getting the ID
+    disregard, path, ids = path.split('/')
+    print(f"This is the id deleted {ids}")
+    chat_collection.delete_one({"_id": str(ids)})
+
+    response = (
+        f"HTTP/1.1 204 No Content\r\n\r\n"
+    )
+    handler.request.sendall(response.encode())

@@ -117,6 +117,7 @@ function chatMessageHTML(messageJSON) {
     return messageHTML;
 }
 
+
 function initWS() {
     // Establish a WebSocket connection with the server
     socket = new WebSocket('ws://' + window.location.host + '/websocket');
