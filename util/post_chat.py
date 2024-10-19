@@ -5,24 +5,28 @@
 # When you receive a chat message, you will store it in your database with:
 # The message that was sent, the username of the user that sent the message (You can use "Guest" for now), and a unique id for the message
 # You may choose what you send in response to these requests (The front end will ignore the response)
+import hashlib
 import json
 import html
+import os
+
 from pymongo import MongoClient
+
+from util.MongoClient import MongoIsMongoDo
 
 
 def post_chat(request, handler):
-    #mongo_client = MongoClient("mongo")
-    mongo_client = MongoClient("localhost")
-    db = mongo_client["cse312"]
-    chat_collection = db["chat"]
-    users_collection = db["users"]
+    mongo_client, db, chat_collection, users_collection = MongoIsMongoDo()
     jbody = json.loads(request.body.decode())
     body = jbody.get('message', '')
 
-    msg_id = chat_collection.count_documents({})
-    if msg_id is None:
-        msg_id = 0
-        print("It was none")
+
+    # msg_id = chat_collection.count_documents({})
+    # if msg_id is None:
+    #     msg_id = 0
+    #     print("It was none")
+    response_msg = f"Message has been sent"
+
 
     addcookie = ""
     UserID = ""
@@ -30,20 +34,31 @@ def post_chat(request, handler):
     if 'UserID' in request.cookies:
         UserID = request.cookies['UserID']
     else:
-        UserID = str(msg_id)
-        addcookie = f"Set-Cookie: UserID={msg_id}\r\n"
-
-    if 'Auth' in request.cookies:
-        Auth = request.cookies['Auth']
-        account = users_collection.find_one({"token": Auth})
-        if account:
-            username = str(account['username'])
-
-    chat_collection.insert_one({"id": str(msg_id), "username": username, "message": html.escape(body), "UserID": f"{UserID}"})
-
-    response_msg = f"Message has been sent"
-
+        UserID = os.urandom(16).hex()
+        addcookie = f"Set-Cookie: UserID={UserID}\r\n"
     response = (
         f"HTTP/1.1 201 Created\r\nContent-Length: {len(response_msg)}\r\nX-Content-Type-Options: nosniff\r\n{addcookie}Content-Type: application/json\r\n\r\n{response_msg}"
     )
+    if 'Auth' in request.cookies:
+        Auth = request.cookies['Auth']
+        Hased_Auth = hashlib.sha256(Auth.encode()).hexdigest()
+        account = users_collection.find_one({"token": Hased_Auth})
+
+        if account:
+            username = str(account['username'])
+            xsrf_token = request.headers.get("X-XSRF-TOKEN", None)
+            db_token = account["xsrf_token"]
+            if xsrf_token and account["xsrf_token"] == xsrf_token:
+                chat_collection.insert_one({"username": username, "message": html.escape(body), "UserID": f"{UserID}"})
+            else:
+                message =f"This XSRF token was not issued to this user"
+                response = f"HTTP/1.1 403 Forbidden\r\nContent-Length: {len(message)}\r\nX-Content-Type-Options: nosniff\r\n\r\n{message}"
+        else:
+            chat_collection.insert_one({"username": username, "message": html.escape(body), "UserID": f"{UserID}"})
+
+    else:
+        chat_collection.insert_one({"username": username, "message": html.escape(body), "UserID": f"{UserID}"})
+
+
+
     handler.request.sendall(response.encode())

@@ -42,6 +42,11 @@ function sendChat() {
         }
         const messageJSON = {"message": message};
         request.open("POST", "/chat-messages");
+        //From LO3
+        const chatTextBoxXsrfToken = document.getElementById("xsrf-token")
+        const xsrfToken = chatTextBoxXsrfToken.value;
+        request.setRequestHeader("X-XSRF-TOKEN", xsrfToken);
+        //
         request.send(JSON.stringify(messageJSON));
     }
     chatTextBox.focus();
@@ -57,6 +62,7 @@ function deleteMessage(messageId) {
     request.open("DELETE", "/chat-messages/" + messageId);
     request.send();
 }
+
 
 
 function updateChat() {

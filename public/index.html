@@ -37,6 +37,7 @@
                 Chat:
                 <input id="chat-text-box" type="text">
             </label>
+            <input type="hidden" id="xsrf-token" value="{{xsrf_token}}">
             <button id="chat-button" onclick="sendChat()">Send</button>
         </div>
 
@@ -45,12 +46,14 @@
             Upload:
             <input type="file" name="upload">
             <input type="submit" value="Upload">
+
         </form>
+
     </div>
 
 
     <div class="user-list">
-            {{RegLoginOrLogout}}
+            {{RegLoginSpotifyOrLogout}}
 <!--        Register:-->
 <!--        <form action="/register" method="post" enctype="application/x-www-form-urlencoded">-->
 <!--            <label>Username:-->
@@ -75,9 +78,9 @@
 <!--            <input type="submit" value="Post">-->
 <!--        </form>-->
 
-        <form action="/spotify-login" method="get" enctype="application/x-www-form-urlencoded">
-            <input type="submit" value="Login With Spotify">
-        </form>
+<!--        <form action="/spotify-login" method="get" enctype="application/x-www-form-urlencoded">-->
+<!--            <input type="submit" value="Login With Spotify">-->
+<!--        </form>-->
 
         <div class="video-chat">
             <button onclick="startVideo()">Start My Video</button>

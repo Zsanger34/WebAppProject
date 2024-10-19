@@ -1,33 +1,41 @@
+import hashlib
+import secrets
+from os import access
+
 from pymongo import MongoClient
 
 import public
+from util.MongoClient import MongoIsMongoDo
 
 
 # This path is provided as an example of how to use the router
 def root_path(request, handler):
+    mongo_client, db, chat_collection, users_collection = MongoIsMongoDo()
     with open(f"public/index.html", "rb") as file:
         html = file.read()
     visit = 0
     addcookie = ""
     html = html.decode()
 
-    mongo_client = MongoClient("localhost")
-    db = mongo_client["cse312"]
-    users_collection = db["users"]
+
 
     Auth=""
+    account = None
     if 'Auth' in request.cookies:
         Auth = request.cookies['Auth']
+        Hased_Auth = hashlib.sha256(Auth.encode()).hexdigest()
+        account = users_collection.find_one({"token": Hased_Auth})
 
-    account = users_collection.find_one({"token": Auth})
-
-    if account:
-        html=html.replace("{{RegLoginOrLogout}}", """
+    token = ''
+    if account and 'Auth' in request.cookies:
+        html=html.replace("{{RegLoginSpotifyOrLogout}}", """
         <form action="/logout" method="post">
                 <button type="submit">Log Out</button>
             </form>""")
+        token = secrets.token_hex(32)
+        users_collection.update_one({"_id": account["_id"]}, {"$set": {"xsrf_token": token}})
     else:
-        html=html.replace("{{RegLoginOrLogout}}",
+        html=html.replace("{{RegLoginSpotifyOrLogout}}",
         """Register:
         <form action="/register" method="post" enctype="application/x-www-form-urlencoded">
             <label>Username:
@@ -50,7 +58,12 @@ def root_path(request, handler):
                 <input type="password" name="password">
             </label>
             <input type="submit" value="Post">
-        </form>""")
+        </form>
+        
+         <form action="/spotify-login" method="get" enctype="application/x-www-form-urlencoded">
+            <input type="submit" value="Login With Spotify">
+        </form>
+        """)
     if 'visits' in request.cookies:
         visit = int(request.cookies["visits"]) + 1
         addcookie = f"Set-Cookie: visits={visit}; Max-Age=3600"
@@ -59,6 +72,7 @@ def root_path(request, handler):
         addcookie = f"Set-Cookie: visits={visit}; Max-Age=3600"
 
     html = html.replace("{{visits}}", str(visit))
+    html = html.replace("{{xsrf_token}}", str(token))
     html = html.encode()
 
     line_len = len(html)

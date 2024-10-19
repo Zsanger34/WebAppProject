@@ -8,6 +8,8 @@ from util.delete_chat import delete_chat
 from util.get_chat import get_chat
 from util.post_chat import post_chat
 from util.auth import login, register, logout
+from util.spotify import spotify_login, spotify_return
+
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
 
@@ -23,6 +25,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         self.router.add_route("POST", '/login', login, True)
         self.router.add_route("POST", '/register', register, True)
         self.router.add_route("POST", '/logout', logout, True)
+        self.router.add_route("GET", '/spotify-login?', spotify_login, True)
+        self.router.add_route("GET", '/spotify?', spotify_return, False)
         super().__init__(request, client_address, server)
 
     def handle(self):

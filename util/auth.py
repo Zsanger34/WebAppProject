@@ -1,10 +1,13 @@
 import hashlib
 import os
+import secrets
 
 import bcrypt
 from pymongo import MongoClient
 
 import util.request
+from util.MongoClient import MongoIsMongoDo
+from util.router import response_404
 
 '''
 LO1 Starts Here
@@ -79,15 +82,11 @@ LO2 Starts Here
 # your database. Their password must pass the criteria tested by your validate_password method or the registration fails.
 
 def register(request, handler):
-    #mongo_client = MongoClient("mongo")
-    mongo_client = MongoClient("localhost")
-    db = mongo_client["cse312"]
-    chat_collection = db["users"]
-
+    mongo_client, db, chat_collection, users_collection = MongoIsMongoDo()
     username, password = extract_credentials(request)
     if validate_password(password):
         hashed_password = hash_password(password)
-        chat_collection.insert_one({"username": username, "password": hashed_password, "token": ""})
+        users_collection.insert_one({"username": username, "password": hashed_password, "token": ""})
     response = (
         f"HTTP/1.1 301 Moved Permanently\r\nContent-Length: 0 \r\nLocation: /\r\nX-Content-Type-Options: nosniff\r\n\r\n"
     )
@@ -99,48 +98,38 @@ def register(request, handler):
 # If the [salted hash of the] password matches what you have stored in the database, the user is authenticated.
 
 def login(request, handler):
-    #mongo_client = MongoClient("mongo")
-    mongo_client = MongoClient("localhost")
-    db = mongo_client["cse312"]
-    chat_collection = db["users"]
-    real_chat_collection = db["chat"]
+    mongo_client, db, chat_collection, users_collection = MongoIsMongoDo()
     username, password = extract_credentials(request)
-    # hashed_password = hash_password(password)
-    account = chat_collection.find_one({"username": username})
+    account = users_collection.find_one({"username": username})
     addcookie = ""
+    response = (
+        f"HTTP/1.1 301 Moved Permanently\r\nContent-Length: 0 \r\nLocation: /\r\n{addcookie}\r\nX-Content-Type-Options: nosniff\r\n\r\n"
+    )
     if account:
         db_hashed_pw = account['password']
         if bcrypt.checkpw(password.encode(), db_hashed_pw):
             token = generate_auth_token()
             token_hash = hash_token(token)
-            chat_collection.update_one({"username": username}, {"$set": {"token": token_hash}})
-            Auth = str(token_hash)
-            addcookie = f"Set-Cookie: Auth={token_hash}; HttpOnly; Max-Age=3600\r\n"
-
+            users_collection.update_one({"username": username}, {"$set": {"token": token_hash}})
+            addcookie = f"Set-Cookie: Auth={token}; HttpOnly; Max-Age=3600\r\n"
             response = (
                 f"HTTP/1.1 301 Moved Permanently\r\nContent-Length: 0 \r\nLocation: /\r\n{addcookie}\r\nX-Content-Type-Options: nosniff\r\n\r\n"
             )
-
-
-
     handler.request.sendall(response.encode())
 
 def logout(request, handler):
-    # mongo_client = MongoClient("mongo")
-    mongo_client = MongoClient("localhost")
-    db = mongo_client["cse312"]
-    users_collection = db["users"]
+    mongo_client, db, chat_collection, users_collection = MongoIsMongoDo()
     Auth = ""
+    account = None
     if 'Auth' in request.cookies:
         Auth = request.cookies['Auth']
-
-    account = users_collection.find_one({"token": Auth})
+        Hased_Auth = hashlib.sha256(Auth.encode()).hexdigest()
+        account = users_collection.find_one({"token": Hased_Auth})
     addcookie  =''
     if account:
         users_collection.update_one({"username": account["username"]}, {"$set": {"token":None}})
     else:
         addcookie = f"Set-Cookie: Auth={Auth}; MaxAge=0\r\n"
-
 
     response = (
         f"HTTP/1.1 301 Moved Permanently\r\nContent-Length: 0 \r\nLocation: /\r\n{addcookie}\r\nX-Content-Type-Options: nosniff\r\n\r\n"

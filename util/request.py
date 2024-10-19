@@ -30,11 +30,12 @@ class Request:
                                                                         #print(f"This is my parsed_reqlin {parsed_reqline}")
                                                                         #print(f"This is my parsed_headers {parsed_headers}\n")
         #Parse the Request Line by splitting the whitespace
-        self.method, self.path, self.http_version = parsed_reqline.split()
-        #Stripping the request lines
-        self.method.strip()
-        self.path.strip()
-        self.http_version.strip()
+        if parsed_reqline:
+            self.method, self.path, self.http_version = parsed_reqline.split()
+            #Stripping the request lines
+            self.method.strip()
+            self.path.strip()
+            self.http_version.strip()
         #Parse the Headers by spliting the carriage returns
         headers_parsed = parsed_headers.split('\r\n')
                                                                         #print(f"This is my headers {headers_parsed}\n")

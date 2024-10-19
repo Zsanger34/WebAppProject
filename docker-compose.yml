@@ -2,10 +2,15 @@ version: '3'
 services:
   mongo:
     image: mongo:latest
+    ports:
+      - "27018:27017"
   server:
     build: .
     environment:
       WAIT_HOSTS: mongo:27017
+      client_id: "changeMe"
+      client_secret: "changeMe"
+      redirect_uri: "http://localhost:8080/spotify"
     ports:
       - '8080:8080'
 

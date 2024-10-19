@@ -5,16 +5,19 @@
 import json
 from pymongo import MongoClient
 
+from util.MongoClient import MongoIsMongoDo
+
+
 def get_chat(request, handler):
-    #mongo_client = MongoClient("mongo")
-    mongo_client = MongoClient("localhost")
-    db = mongo_client["cse312"]
-    chat_collection = db["chat"]
+    mongo_client, db, chat_collection, users_collection = MongoIsMongoDo()
 
 
     chat_list = []
     for chat in chat_collection.find():
         #renamed to ID becuase Mongo created its own special ID if not everything gets weird
+        #I dont know why I was changing this to a id instead of _is
+        #Zac Again Dont ever change that line ever
+        #Time Wasted: 1 hour
         chat['id'] = str(chat.pop('_id'))
         chat_list.append(chat)
 
