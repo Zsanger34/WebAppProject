@@ -7,6 +7,7 @@ from util.public import public
 from util.delete_chat import delete_chat
 from util.get_chat import get_chat
 from util.post_chat import post_chat
+from util.auth import login, register, logout
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
 
@@ -17,8 +18,11 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         self.router.add_route("GET", '/', root_path, True)
         self.router.add_route("GET", '/public/', public, False)
         self.router.add_route("POST", '/chat-messages', post_chat, True)
-        self.router.add_route("GET", '/chat-messages', get_chat, True)
         self.router.add_route("DELETE", '/chat-messages/', delete_chat, False)
+        self.router.add_route("GET", '/chat-messages', get_chat, True)
+        self.router.add_route("POST", '/login', login, True)
+        self.router.add_route("POST", '/register', register, True)
+        self.router.add_route("POST", '/logout', logout, True)
         super().__init__(request, client_address, server)
 
     def handle(self):

@@ -6,21 +6,31 @@ import json
 from pymongo import MongoClient
 
 def get_chat(request, handler):
+    #mongo_client = MongoClient("mongo")
     mongo_client = MongoClient("localhost")
     db = mongo_client["cse312"]
     chat_collection = db["chat"]
 
+
     chat_list = []
     for chat in chat_collection.find():
-        #Needed to rename to ID becuase Mongo created its own special ID if not
+        #renamed to ID becuase Mongo created its own special ID if not everything gets weird
         chat['id'] = str(chat.pop('_id'))
         chat_list.append(chat)
-    json_chat = json.dumps(chat_list)
+
+    if 'UserID' in request.cookies:
+        UserID = request.cookies['UserID']
+    else:
+        UserID = 'None'
+    Id_and_Chat = {
+        "chats": chat_list,
+        "UserID": UserID
+    }
+    json_chat = json.dumps(Id_and_Chat)
 
     # Create a response
     response = (
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: application/json\r\n\r\n"
+        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nX-Content-Type-Options: nosniff\r\n\r\n"
         f"{json_chat}"
     )
     handler.request.sendall(response.encode('utf-8'))

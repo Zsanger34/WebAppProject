@@ -9,16 +9,22 @@
 # Note that the "X" next to each chat message will send a DELETE request for that message
 from pymongo import MongoClient
 def delete_chat(request, handler):
+    #mongo_client = MongoClient("mongo")
     mongo_client = MongoClient("localhost")
     db = mongo_client["cse312"]
     chat_collection = db["chat"]
     path = request.path
     #Getting the ID
     disregard, path, ids = path.split('/')
-    print(f"This is the id deleted {ids}")
     chat_collection.delete_one({"_id": str(ids)})
+    auth=''
+    if 'auth' in request.cookies:
+        auth = request.cookies['auth']
+    else:
+        auth = str(auth)
+        addcookie = f"Set-Cookie: auth={auth}\r\n"
 
     response = (
-        f"HTTP/1.1 204 No Content\r\n\r\n"
+        f"HTTP/1.1 204 No Content\r\nX-Content-Type-Options: nosniff\r\n\r\n"
     )
     handler.request.sendall(response.encode())

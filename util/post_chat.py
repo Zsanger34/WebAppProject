@@ -11,10 +11,11 @@ from pymongo import MongoClient
 
 
 def post_chat(request, handler):
+    #mongo_client = MongoClient("mongo")
     mongo_client = MongoClient("localhost")
     db = mongo_client["cse312"]
     chat_collection = db["chat"]
-
+    users_collection = db["users"]
     jbody = json.loads(request.body.decode())
     body = jbody.get('message', '')
 
@@ -24,18 +25,25 @@ def post_chat(request, handler):
         print("It was none")
 
     addcookie = ""
-    # UserID = ""
-    # if 'UserID' in request.cookies:
-    #     UserID = request.cookies['UserID']
-    # else:
-    #     UserID = str(msg_id)
-    #     addcookie = f"Set-Cookie: UserID={msg_id}\r\n"
+    UserID = ""
+    username = "GUEST"
+    if 'UserID' in request.cookies:
+        UserID = request.cookies['UserID']
+    else:
+        UserID = str(msg_id)
+        addcookie = f"Set-Cookie: UserID={msg_id}\r\n"
 
-    chat_collection.insert_one({"_id": str(msg_id), "username": "GUEST", "message": html.escape(body), "UserID": f"{UserID}"})
+    if 'Auth' in request.cookies:
+        Auth = request.cookies['Auth']
+        account = users_collection.find_one({"token": Auth})
+        if account:
+            username = str(account['username'])
 
-    response_msg = "Message has been sent"
+    chat_collection.insert_one({"id": str(msg_id), "username": username, "message": html.escape(body), "UserID": f"{UserID}"})
+
+    response_msg = f"Message has been sent"
 
     response = (
-        f"HTTP/1.1 201 Created\r\nContent-Length: {len(response_msg)}\r\n{addcookie}Content-Type: application/json\r\n\r\n{response_msg}"
+        f"HTTP/1.1 201 Created\r\nContent-Length: {len(response_msg)}\r\nX-Content-Type-Options: nosniff\r\n{addcookie}Content-Type: application/json\r\n\r\n{response_msg}"
     )
     handler.request.sendall(response.encode())

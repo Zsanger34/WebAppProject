@@ -1,12 +1,14 @@
-version: '3' 
-services: 
+version: '3'
+services:
+  mongo:
+    image: mongo:latest
   server:
-    build: . 
-    ports:       
-      - '8080:8080'
+    build: .
     environment:
       WAIT_HOSTS: mongo:27017
-  mongo: #Adding Mongo into the docker-compose
-    image: mongo:4.2.5
     ports:
-      - '27017:27017'
+      - '8080:8080'
+
+
+
+

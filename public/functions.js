@@ -1,6 +1,7 @@
 const ws = false;
 let socket = null;
 let chatMessages = {};
+//var serverUserID = 0
 
 function welcome() {
     document.addEventListener("keypress", function (event) {
@@ -62,7 +63,12 @@ function updateChat() {
     const request = new XMLHttpRequest();
     request.onreadystatechange = function () {
         if (this.readyState === 4 && this.status === 200) {
-            updateChatMessages(JSON.parse(this.response));
+            const data = JSON.parse(this.response);
+            const Messages = data.chats;
+            const UserID = data.UserID;
+            window.serverUserID = UserID;
+
+            updateChatMessages(Messages);
         }
     }
     request.open("GET", "/chat-messages");
@@ -70,7 +76,7 @@ function updateChat() {
 }
 
 function updateChatMessages(serverMessages) {
-    let serverIndex = 0
+    let serverIndex = 0;
     let localIndex = 0;
 
     while (serverIndex < serverMessages.length && localIndex < chatMessages.length) {
@@ -112,8 +118,13 @@ function chatMessageHTML(messageJSON) {
     const username = messageJSON.username;
     const message = messageJSON.message;
     const messageId = messageJSON.id;
-    let messageHTML = "<div id='message_" + messageId + "'><button onclick='deleteMessage(\"" + messageId + "\")'>X</button> ";
-    messageHTML += "<b>" + username + "</b>: " + message + "</div>";
+    const messageUserID = messageJSON.UserID;
+    const backgroundColor = messageUserID === window.serverUserID ? "black" : "";
+
+    let messageHTML = "<div id='message_" + messageId + "'>" +
+        "                       <button onclick='deleteMessage(\"" + messageId + "\")'>X</button> ";
+    messageHTML += "<b>" + username + "</b>: " + "<span style='background-color: " + backgroundColor + ";'>" + message + "</div>";
+    //messageHTML += "<b>" + username + "</b>: " + message + "</div>";
     return messageHTML;
 }
 
